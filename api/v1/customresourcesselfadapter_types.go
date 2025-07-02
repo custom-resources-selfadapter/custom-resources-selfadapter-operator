@@ -17,29 +17,39 @@ limitations under the License.
 package v1
 
 import (
+	autoscaling "k8s.io/api/autoscaling/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
+type ResourcesSelfadapterConfig struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
 
 // CustomResourcesSelfadapterSpec defines the desired state of CustomResourcesSelfadapter.
 type CustomResourcesSelfadapterSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
-	// Foo is an example field of CustomResourcesSelfadapter. Edit customresourcesselfadapter_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	// The image of the Custom Pod Autoscaler
+	Template PodTemplateSpec `json:"template"`
+	// ScaleTargetRef defining what the Custom Pod Autoscaler should manage
+	ScaleTargetRef autoscaling.CrossVersionObjectReference `json:"scaleTargetRef"`
+	// Configuration options to be delivered as environment variables to the container
+	Config                    []ResourcesSelfadapterConfig `json:"config,omitempty"`
+	ProvisionRole             *bool                        `json:"provisionRole,omitempty"`
+	ProvisionRoleBinding      *bool                        `json:"provisionRoleBinding,omitempty"`
+	ProvisionServiceAccount   *bool                        `json:"provisionServiceAccount,omitempty"`
+	ProvisionPod              *bool                        `json:"provisionPod,omitempty"`
+	RoleRequiresMetricsServer *bool                        `json:"roleRequiresMetricsServer,omitempty"`
+	RoleRequiresArgoRollouts  *bool                        `json:"roleRequiresArgoRollouts,omitempty"`
 }
 
 // CustomResourcesSelfadapterStatus defines the observed state of CustomResourcesSelfadapter.
 type CustomResourcesSelfadapterStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
 }
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+// +kubebuilder:resource:shortName:crs
 
 // CustomResourcesSelfadapter is the Schema for the customresourcesselfadapters API.
 type CustomResourcesSelfadapter struct {
@@ -58,6 +68,23 @@ type CustomResourcesSelfadapterList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []CustomResourcesSelfadapter `json:"items"`
 }
+
+type PodTemplateSpec struct {
+	// Standard object's metadata.
+	// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
+	// +optional
+	ObjectMeta PodMeta `json:"metadata" protobuf:"bytes,1,opt,name=metadata"`
+
+	// Specification of the desired behavior of the pod.
+	// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
+	// +optional
+	Spec PodSpec `json:"spec" protobuf:"bytes,2,opt,name=spec"`
+}
+
+// +kubebuilder:pruning:PreserveUnknownFields
+type PodMeta metav1.ObjectMeta
+
+type PodSpec corev1.PodSpec
 
 func init() {
 	SchemeBuilder.Register(&CustomResourcesSelfadapter{}, &CustomResourcesSelfadapterList{})

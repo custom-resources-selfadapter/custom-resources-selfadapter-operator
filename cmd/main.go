@@ -39,6 +39,7 @@ import (
 
 	customresourcesselfdapternetv1 "github.com/custom-resources-selfadapter/custom-resoursces-selfadapter-operator/api/v1"
 	"github.com/custom-resources-selfadapter/custom-resoursces-selfadapter-operator/internal/controller"
+	"github.com/custom-resources-selfadapter/custom-resoursces-selfadapter-operator/internal/reconcile"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -202,9 +203,17 @@ func main() {
 		os.Exit(1)
 	}
 
+	client := mgr.GetClient()
+	scheme := mgr.GetScheme()
+
 	if err := (&controller.CustomResourcesSelfadapterReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
+		Client: client,
+		Log: ctrl.Log.WithName("controllers").WithName("CustomResourcesSelfadapter"),
+		KubernetesResourceReconciler: &reconcile.KubernetesResourceReconciler{
+			Client: client,
+			Scheme: scheme,
+		},
+		Scheme: scheme,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "CustomResourcesSelfadapter")
 		os.Exit(1)
