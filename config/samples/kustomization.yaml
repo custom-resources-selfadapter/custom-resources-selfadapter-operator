@@ -1,0 +1,4 @@
+## Append samples of your project ##
+resources:
+- customresourcesselfdapter.net_v1_customresourcesselfadapter.yaml
+# +kubebuilder:scaffold:manifestskustomizesamples
